@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction Result - Cancer Cell Classification</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Prediction Result</h1>
+            <a href="/" class="back-btn">← Back to Upload</a>
+        </header>
+        <main>
+            <section class="result-section">
+                <h2>Analysis Complete</h2>
+                <div class="result-card">
+                    <div class="result-header">
+                        <h3>{{ filename }}</h3>
+                        {% if is_sample %}
+                            <span class="sample-badge">Sample Image</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="prediction-result">
+                        <div class="prediction-label {{ 'malignant' if result == 'Malignant' else 'benign' }}">
+                            {{ result }}
+                        </div>
+                        <div class="confidence">
+                            Confidence: {{ confidence }}
+                        </div>
+                    </div>
+
+                    {% if expected %}
+                    <div class="expected-result">
+                        <strong>Expected:</strong> {{ expected }}
+                        {% if result == expected %}
+                            <span class="correct">✓ Correct</span>
+                        {% else %}
+                            <span class="incorrect">✗ Incorrect</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {% if warnings %}
+                    <div class="warnings">
+                        <h4>⚠️ Important Notes:</h4>
+                        <ul>
+                            {% for warning in warnings %}
+                            <li>{{ warning }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <div class="validation-info">
+                        {{ validation_confidence }}
+                    </div>
+                </div>
+                
+                <div class="actions">
+                    <a href="/" class="btn primary">Upload Another Image</a>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

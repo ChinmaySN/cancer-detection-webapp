@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cancer Cell Classification</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+                <header>
+            <div class="header-content">
+                <h1>🔬 CancerNet Detection</h1>
+                <p class="subtitle">Advanced AI-powered breast cancer detection using CNN deep learning</p>
+                <button id="theme-toggle-btn" class="theme-toggle-btn">
+                    <div class="moon-icon">🌙</div>
+                    <div class="sun-icon">☀️</div>
+                </button>
+            </div>
+        </header>
+
+        <!-- Instructions Section -->
+        <div class="instructions-section">
+            <div class="instructions-content">
+                <h2>📋 How to Use This System</h2>
+                <div class="instructions-grid">
+                    <div class="instruction-card">
+                        <div class="instruction-icon">1️⃣</div>
+                        <h3>Load the Model</h3>
+                        <p>Click the <strong>"Load Model"</strong> button to initialize the AI model. Wait for the success message before proceeding.</p>
+                    </div>
+                    <div class="instruction-card">
+                        <div class="instruction-icon">2️⃣</div>
+                        <h3>Upload Image</h3>
+                        <p>Drag & drop a histopathology image or click to browse. Supported formats: JPG, PNG, JPEG.</p>
+                    </div>
+                    <div class="instruction-card">
+                        <div class="instruction-icon">3️⃣</div>
+                        <h3>Get Prediction</h3>
+                        <p>Click <strong>"Predict"</strong> to analyze the image. The AI will classify it as benign or malignant tissue.</p>
+                    </div>
+                    <div class="instruction-card">
+                        <div class="instruction-icon">🧪</div>
+                        <h3>Test Samples</h3>
+                        <p>Try the provided sample images below to see the model in action with known examples.</p>
+                    </div>
+                </div>
+                <div class="important-note">
+                    <div class="note-icon">⚠️</div>
+                    <div class="note-content">
+                        <h4>Important Disclaimer</h4>
+                        <p>This is an educational AI tool for demonstrating machine learning capabilities. <strong>Do not use for actual medical diagnosis.</strong> Always consult qualified medical professionals for proper healthcare decisions.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Model Controls Section -->
+        <div class="model-section">
+            <div class="model-controls">
+                <button id="load-model-btn" class="load-model-btn">Load Model</button>
+                <div id="model-status" class="model-status">{% if model_loaded %}✅ Model Ready{% else %}⏳ Model not loaded{% endif %}</div>
+            </div>
+        </div>
+
+        <main>
+            <section class="upload-section">
+                <h2>Upload Cell Image</h2>
+                <div id="upload-disabled-overlay" class="disabled-overlay" {% if not model_loaded %}style="display: block;"{% else %}style="display: none;"{% endif %}>
+                    <p>Please load the model first to enable image upload</p>
+                </div>
+                <form id="upload-form" method="POST" enctype="multipart/form-data" action="/predict">
+                    <div class="drop-area" id="drop-area" {% if not model_loaded %}disabled{% endif %}>
+                        <p>Drag & Drop or <span class="file-select">Select</span> an image</p>
+                        <input type="file" name="file" id="file-input" accept="image/*" style="display:none;" {% if not model_loaded %}disabled{% endif %}>
+                    </div>
+                    <button type="submit" class="predict-btn" id="predict-btn" {% if not model_loaded %}disabled{% endif %}>Predict</button>
+                </form>
+                <div id="preview"></div>
+                <div id="result"></div>
+            </section>
+            <section class="samples-section">
+                <h2>Test Sample Images</h2>
+                <div class="samples-container">
+                    <div class="sample-group">
+                        <h3>Benign</h3>
+                        <div class="sample-images" id="benign-samples">
+                            {% if sample_files and sample_files.benign %}
+                                {% for img in sample_files.benign[:4] %}
+                                <div class="sample-img-wrapper">
+                                    <img src="/uploads/{{ img }}" alt="Benign Sample" class="sample-img">
+                                    <button type="button" class="sample-predict-btn" data-filename="{{ img }}" {% if not model_loaded %}disabled{% endif %}>Test</button>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <p>No benign samples available</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="sample-group">
+                        <h3>Malignant</h3>
+                        <div class="sample-images" id="malignant-samples">
+                            {% if sample_files and sample_files.malignant %}
+                                {% for img in sample_files.malignant[:4] %}
+                                <div class="sample-img-wrapper">
+                                    <img src="/uploads/{{ img }}" alt="Malignant Sample" class="sample-img">
+                                    <button type="button" class="sample-predict-btn" data-filename="{{ img }}" {% if not model_loaded %}disabled{% endif %}>Test</button>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <p>No malignant samples available</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        <footer>
+            <div class="footer-content">
+                <!-- Main Info Section -->
+                <div class="footer-main">
+                    <div class="footer-info">
+                        <h3>Chinmay S Neelagiri</h3>
+                        <p class="role">ML Engineer</p>
+                        <p class="college">Global Academy of Technology | 2024-2025</p>
+                    </div>
+                    <div class="footer-project">
+                        <h4>🔬 AI Cancer Detection System</h4>
+                        <p>Advanced breast cancer detection using CNN for histopathology image classification. Built with TensorFlow and deployed with Flask.</p>
+                    </div>
+                </div>
+                
+                <!-- Links & Dataset Section -->
+                <div class="footer-secondary">
+                    <div class="footer-dataset">
+                        <h4>📊 Dataset Source</h4>
+                        <a href="https://www.kaggle.com/datasets/paultimothymooney/breast-histopathology-images" target="_blank" rel="noopener noreferrer" class="dataset-link">
+                            Breast Histopathology Images (Kaggle)
+                        </a>
+                        <p class="disclaimer">⚠️ Educational use only • Not for medical diagnosis</p>
+                    </div>
+                    <div class="footer-contact">
+                        <h4>📧 Contact</h4>
+                        <div class="contact-links">
+                            <a href="mailto:csneelagiri2020@gmail.com" class="contact-link">
+                                <span class="icon">✉️</span> Email
+                            </a>
+                            <a href="tel:+919686517442" class="contact-link">
+                                <span class="icon">📞</span> Phone
+                            </a>
+                            <a href="https://www.linkedin.com/in/chinmaysn/" target="_blank" class="contact-link">
+                                <span class="icon">💼</span> LinkedIn
+                            </a>
+                            <a href="https://github.com/ChinmaySN" target="_blank" class="contact-link">
+                                <span class="icon">👨‍💻</span> GitHub
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+    <script>
+        // Drag & drop and preview logic
+        const dropArea = document.getElementById('drop-area');
+        const fileInput = document.getElementById('file-input');
+        const preview = document.getElementById('preview');
+        const loadModelBtn = document.getElementById('load-model-btn');
+        const modelStatus = document.getElementById('model-status');
+        const predictBtn = document.getElementById('predict-btn');
+        const uploadDisabledOverlay = document.getElementById('upload-disabled-overlay');
+        const samplePredictBtns = document.querySelectorAll('.sample-predict-btn');
+        const uploadForm = document.getElementById('upload-form');
+        const resultDiv = document.getElementById('result');
+        
+        let modelLoaded = {% if model_loaded %}true{% else %}false{% endif %};
+        
+        function updateUIState() {
+            if (modelLoaded) {
+                // Enable upload features
+                dropArea.removeAttribute('disabled');
+                fileInput.removeAttribute('disabled');
+                predictBtn.removeAttribute('disabled');
+                uploadDisabledOverlay.style.display = 'none';
+                
+                // Enable sample test buttons
+                samplePredictBtns.forEach(btn => {
+                    btn.removeAttribute('disabled');
+                });
+                
+                // Update drop area styling
+                dropArea.classList.remove('disabled');
+            } else {
+                // Disable upload features
+                dropArea.setAttribute('disabled', 'true');
+                fileInput.setAttribute('disabled', 'true');
+                predictBtn.setAttribute('disabled', 'true');
+                uploadDisabledOverlay.style.display = 'block';
+                
+                // Disable sample test buttons
+                samplePredictBtns.forEach(btn => {
+                    btn.setAttribute('disabled', 'true');
+                });
+                
+                // Update drop area styling
+                dropArea.classList.add('disabled');
+            }
+        }
+        
+        function setupDropArea() {
+            // Form submission handler
+            uploadForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                if (!modelLoaded) {
+                    alert('Please load the model first before making predictions.');
+                    return;
+                }
+                
+                if (!fileInput.files[0]) {
+                    alert('Please select an image first.');
+                    return;
+                }
+                
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                
+                // Show loading state
+                predictBtn.disabled = true;
+                predictBtn.textContent = 'Predicting...';
+                resultDiv.innerHTML = '<div class="loading">🔄 Analyzing image...</div>';
+                
+                try {
+                    const response = await fetch('/predict', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (response.ok) {
+                        const contentType = response.headers.get('content-type');
+                        
+                        if (contentType && contentType.includes('application/json')) {
+                            // Handle JSON response
+                            const data = await response.json();
+                            
+                            if (data.success) {
+                                const ismalignant = data.result.toLowerCase().includes('malignant');
+                                
+                                let resultHTML = `
+                                    <div class="prediction-result-inline">
+                                        <div class="prediction-label ${ismalignant ? 'malignant' : 'benign'}">
+                                            ${data.result}
+                                        </div>
+                                        <div class="confidence-text">Confidence: ${data.confidence}</div>
+                                `;
+                                
+                                if (data.warnings && data.warnings.length > 0) {
+                                    resultHTML += `
+                                        <div class="warnings-inline">
+                                            <h4>⚠️ Important Notes:</h4>
+                                            <ul>
+                                                ${data.warnings.map(warning => `<li>${warning}</li>`).join('')}
+                                            </ul>
+                                        </div>
+                                    `;
+                                }
+                                
+                                resultHTML += '</div>';
+                                resultDiv.innerHTML = resultHTML;
+                            } else {
+                                resultDiv.innerHTML = `<div class="error">❌ Error: ${data.error}</div>`;
+                            }
+                        } else {
+                            // Handle HTML response (fallback)
+                            const result = await response.text();
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(result, 'text/html');
+                            const resultSection = doc.querySelector('.result-section');
+                            
+                            if (resultSection) {
+                                displayPredictionResult(resultSection);
+                            } else {
+                                resultDiv.innerHTML = '<div class="success">✅ Prediction completed!</div>';
+                            }
+                        }
+                    } else {
+                        const errorData = await response.json().catch(() => ({ error: 'Unknown error occurred' }));
+                        resultDiv.innerHTML = `<div class="error">❌ Error: ${errorData.error || 'Prediction failed'}</div>`;
+                    }
+                } catch (error) {
+                    resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+                } finally {
+                    predictBtn.disabled = false;
+                    predictBtn.textContent = 'Predict';
+                }
+            });
+            
+            dropArea.addEventListener('click', (e) => {
+                if (!modelLoaded) {
+                    e.preventDefault();
+                    alert('Please load the model first before uploading images.');
+                    return;
+                }
+                fileInput.click();
+            });
+            
+            dropArea.addEventListener('dragover', e => {
+                if (!modelLoaded) {
+                    e.preventDefault();
+                    e.dataTransfer.effectAllowed = 'none';
+                    e.dataTransfer.dropEffect = 'none';
+                    return;
+                }
+                e.preventDefault();
+                dropArea.classList.add('hover');
+            });
+            
+            dropArea.addEventListener('dragleave', () => {
+                if (modelLoaded) {
+                    dropArea.classList.remove('hover');
+                }
+            });
+            
+            dropArea.addEventListener('drop', e => {
+                e.preventDefault();
+                if (!modelLoaded) {
+                    alert('Please load the model first before uploading images.');
+                    return;
+                }
+                dropArea.classList.remove('hover');
+                fileInput.files = e.dataTransfer.files;
+                showPreview(fileInput.files[0]);
+            });
+            
+            fileInput.addEventListener('change', () => {
+                if (fileInput.files[0] && modelLoaded) showPreview(fileInput.files[0]);
+            });
+        }
+        
+        function showPreview(file) {
+            if (!modelLoaded) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.innerHTML = `<img src='${e.target.result}' class='preview-img'/>`;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function displayPredictionResult(resultSection) {
+            const predictionLabel = resultSection.querySelector('.prediction-label');
+            const confidence = resultSection.querySelector('.confidence');
+            const warnings = resultSection.querySelector('.warnings');
+            
+            let resultHTML = '<div class="prediction-result-inline">';
+            
+            if (predictionLabel && confidence) {
+                const resultText = predictionLabel.textContent.trim();
+                const confidenceText = confidence.textContent.trim();
+                const ismalignant = resultText.toLowerCase().includes('malignant');
+                
+                resultHTML += `
+                    <div class="prediction-label ${ismalignant ? 'malignant' : 'benign'}">
+                        ${resultText}
+                    </div>
+                    <div class="confidence-text">${confidenceText}</div>
+                `;
+            }
+            
+            if (warnings) {
+                resultHTML += `<div class="warnings-inline">${warnings.innerHTML}</div>`;
+            }
+            
+            resultHTML += '</div>';
+            resultDiv.innerHTML = resultHTML;
+        }
+        
+        // Sample prediction handlers
+        samplePredictBtns.forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                if (!modelLoaded) {
+                    alert('Please load the model first before testing samples.');
+                    return;
+                }
+                
+                const filename = e.target.getAttribute('data-filename');
+                const originalText = e.target.textContent;
+                
+                try {
+                    e.target.textContent = 'Testing...';
+                    e.target.disabled = true;
+                    
+                    // Clear previous results
+                    resultDiv.innerHTML = '<div class="loading">🔄 Analyzing sample image...</div>';
+                    
+                    const response = await fetch(`/predict_sample/${filename}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const contentType = response.headers.get('content-type');
+                        
+                        if (contentType && contentType.includes('application/json')) {
+                            // Handle JSON response
+                            const data = await response.json();
+                            
+                            if (data.success) {
+                                const ismalignant = data.result.toLowerCase().includes('malignant');
+                                const expected = data.expected || '';
+                                const isCorrect = data.result === expected;
+                                
+                                let resultHTML = `
+                                    <div class="prediction-result-inline">
+                                        <div class="sample-info">Sample: ${filename}</div>
+                                        <div class="prediction-label ${ismalignant ? 'malignant' : 'benign'}">
+                                            ${data.result}
+                                        </div>
+                                        <div class="confidence-text">Confidence: ${data.confidence}</div>
+                                `;
+                                
+                                if (expected) {
+                                    resultHTML += `
+                                        <div class="expected-result">
+                                            <strong>Expected:</strong> ${expected}
+                                            <span class="${isCorrect ? 'correct' : 'incorrect'}">
+                                                ${isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                                            </span>
+                                        </div>
+                                    `;
+                                }
+                                
+                                if (data.warnings && data.warnings.length > 0) {
+                                    resultHTML += `
+                                        <div class="warnings-inline">
+                                            <h4>⚠️ Important Notes:</h4>
+                                            <ul>
+                                                ${data.warnings.map(warning => `<li>${warning}</li>`).join('')}
+                                            </ul>
+                                        </div>
+                                    `;
+                                }
+                                
+                                resultHTML += '</div>';
+                                resultDiv.innerHTML = resultHTML;
+                            } else {
+                                resultDiv.innerHTML = `<div class="error">❌ Error: ${data.error}</div>`;
+                            }
+                        } else {
+                            // Handle HTML response (fallback)
+                            const result = await response.text();
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(result, 'text/html');
+                            const resultSection = doc.querySelector('.result-section');
+                            
+                            if (resultSection) {
+                                displayPredictionResult(resultSection);
+                            } else {
+                                resultDiv.innerHTML = '<div class="success">✅ Sample prediction completed!</div>';
+                            }
+                        }
+                    } else {
+                        const errorData = await response.json().catch(() => ({ error: 'Error testing sample' }));
+                        resultDiv.innerHTML = `<div class="error">❌ Error: ${errorData.error}</div>`;
+                    }
+                } catch (error) {
+                    resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+                } finally {
+                    e.target.textContent = originalText;
+                    e.target.disabled = false;
+                }
+            });
+        });
+        
+        // Model loading
+        loadModelBtn.addEventListener('click', async () => {
+            try {
+                loadModelBtn.disabled = true;
+                loadModelBtn.textContent = 'Loading...';
+                modelStatus.textContent = 'Loading model...';
+                
+                const response = await fetch('/load_model', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.status === 'started' || data.status === 'loading') {
+                    checkModelStatus();
+                } else if (data.status === 'already_loaded') {
+                    modelStatus.textContent = 'Model loaded successfully!';
+                    loadModelBtn.textContent = 'Model Loaded';
+                    loadModelBtn.style.background = '#16a085';
+                    modelLoaded = true;
+                    updateUIState();
+                }
+            } catch (error) {
+                modelStatus.textContent = 'Error loading model';
+                loadModelBtn.disabled = false;
+                loadModelBtn.textContent = 'Load Model';
+            }
+        });
+        
+        async function checkModelStatus() {
+            try {
+                const response = await fetch('/model_status');
+                const data = await response.json();
+                
+                if (data.loaded) {
+                    modelStatus.textContent = 'Model loaded successfully!';
+                    loadModelBtn.textContent = 'Model Loaded';
+                    loadModelBtn.style.background = '#16a085';
+                    loadModelBtn.disabled = false;
+                    modelLoaded = true;
+                    updateUIState();
+                } else if (data.loading) {
+                    modelStatus.textContent = `Loading... (${Math.round(data.elapsed)}s)`;
+                    setTimeout(checkModelStatus, 1000);
+                } else {
+                    loadModelBtn.disabled = false;
+                    loadModelBtn.textContent = 'Load Model';
+                }
+            } catch (error) {
+                loadModelBtn.disabled = false;
+                loadModelBtn.textContent = 'Load Model';
+            }
+        }
+        
+        // Initialize
+        setupDropArea();
+        updateUIState();
+        checkModelStatus();
+        initThemeToggle();
+        
+        // Theme toggle functionality
+        function initThemeToggle() {
+            const themeToggleBtn = document.getElementById('theme-toggle-btn');
+            
+            // Check for saved theme preference or default to light mode
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+            }
+            
+            themeToggleBtn.addEventListener('click', () => {
+                document.body.classList.toggle('dark-theme');
+                
+                // Save theme preference
+                const isDark = document.body.classList.contains('dark-theme');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                
+                // Add a subtle animation
+                themeToggleBtn.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    themeToggleBtn.style.transform = 'scale(1)';
+                }, 150);
+            });
+        }
+    </script>
+</body>
+</html>
