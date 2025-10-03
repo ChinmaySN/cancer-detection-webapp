@@ -1,3 +1,4 @@
+python==3.11.9
 Flask==3.0.3
 Pillow==10.3.0
 numpy==1.26.4
